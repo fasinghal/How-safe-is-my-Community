@@ -1,6 +1,5 @@
 #read the data and replace all the missing value indicators ("?") to NA
 communities <- read.csv("D:/SEM3 MS/R for DS P2/communities.data", header=FALSE, na.strings="?")
-View(communities)
 
 names(communities)<-c("state","county","community","communityname","fold","population","householdsize",
                       "racepctblack","racePctWhite","racePctAsian","racePctHisp","agePct12t21",
@@ -61,11 +60,20 @@ summary(myData) # all values are normalized already, are numeric and dont have N
 
 #lets build initial Linear regression model
 
-0.75 * 1994
+#0.75 * 1994
 index_train<-sample(1994, size = 1496) # 75% split
 trainData<- myData[index_train, ]
 testData<- myData[-index_train,]
-lm.model <- lm(data = trainData, formula = ViolentCrimesPerPop~. )
+lm.model <- lm(data = trainData, formula = ViolentCrimesPerPop~.)
 
 summary(lm.model)
+anov<-anova(lm.model)
+insigAttr <-rownames(anov[anov$`Pr(>F)` >0.9,])
 
+#many predictors seem useless
+#lets remove those
+
+formula <- ViolentCrimesPerPop~. -HispPerCap -PctOccupManu -OwnOccLowQuart -RentHighQ
+
+lm.model2<-glm(formula = formula, data = trainData)
+summary(lm.model2) # too many variables -ve AIC! :S
