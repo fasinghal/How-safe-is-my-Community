@@ -172,12 +172,50 @@ cv.aic.glm3 <-cv.glm(data = myData,glmfit = aic.glm.model3, K = 10)
 #prediction error = 0.01782328
 #0.01782328/mean(myData$ViolentCrimesPerPop)
 
-aic.all.model <- glm(formula = aic.all.formula, data = myData)
+aic.all.model <- lm(formula = aic.all.formula, data = myData)
 cv.aic.all<-cv.glm(data = myData,glmfit = aic.all.model, K = 10)
+aic.all.prd<- predict(aic.all.model, newdata = testData)
 #worse off
-#0.01802120/mean(myData$ViolentCrimesPerPop)
+#sqrt(mean(aic.all.model$residuals^2))/mean(myData$ViolentCrimesPerPop)
 
 bic.all.model<-glm(formula = bic.formula, data = myData)
 bic.glm<-cv.glm(data = myData,glmfit = bic.all.model, K = 10)
 #worse off performance to AIC ALL model
 #0.01823776/mean(myData$ViolentCrimesPerPop)
+
+#gotta
+##PCR KNN Lasso Ridge 
+
+#lets train a NN first
+library(neuralnet, quietly = TRUE)
+nn1<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44), linear.output = TRUE) # removing the y col
+saveRDS(nn1, "./nn1.rds")
+
+nn1 <- readRDS("./nn1.rds")
+testData.nn<-testData[,c("population","racepctblack","agePct12t21",
+"agePct16t24","numbUrban","pctUrban","pctWWage","pctWFarmSelf",
+"pctWInvInc","pctWSocSec","whitePerCap","indianPerCap","AsianPerCap",
+"PctPopUnderPov","PctEmploy","PctEmplManu","PctOccupManu",
+"PctOccupMgmtProf","MalePctDivorce","MalePctNevMarr","TotalPctDiv",
+"PctKids2Par","PctWorkMomYoungKids","PctWorkMom","NumIlleg",
+"PctIlleg","NumImmig","PctNotSpeakEnglWell","PctLargHouseOccup",
+"PersPerOccupHous","PersPerRentOccHous","PctPersOwnOccup",
+"PctPersDenseHous","HousVacant","PctHousOccup","PctHousOwnOcc",
+"PctVacantBoarded","PctVacMore6Mos","RentLowQ","RentHighQ",
+"MedRent","MedRentPctHousInc","MedOwnCostPctInc","MedOwnCostPctIncNoMtg",
+"NumInShelters","NumStreet","PctForeignBorn","PctUsePubTrans")]
+
+nn.pr<-compute(x = nn1, covariate = testData.nn)
+MSE.nn <-sum((testData[,101]-nn.pr$net.result)^2)/nrow(testData.nn) #
+MSE.nn*100
+
+#lets compare
+#nnTst<-testData[,101]
+#nnTpr<-nn.pr$net.result
+#alldata.nn<-c(nnTst,nnTpr)
+#range=c(0,1)
+
+#plot(testData[,101],nn.pr$net.result, col="red",main='Real vs predicted NN',pch=18,cex=0.7, xlim = range, ylim=range)
+#abline(0,1,lwd=2)
+#plot(testData[,101], aic.all.prd, col="blue",main='Real vs predicted LR',pch=18,cex=0.7,xlim=range, ylim = range)
+#abline(0,1,lwd=2)
