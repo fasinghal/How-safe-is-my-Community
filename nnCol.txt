@@ -1,0 +1,12 @@
+"population","racepctblack","agePct12t21",
+"agePct16t24","numbUrban","pctUrban","pctWWage","pctWFarmSelf",
+"pctWInvInc","pctWSocSec","whitePerCap","indianPerCap","AsianPerCap","
+"PctPopUnderPov","PctEmploy","PctEmplManu","PctOccupManu","
+"PctOccupMgmtProf","MalePctDivorce","MalePctNevMarr","TotalPctDiv","
+"PctKids2Par","PctWorkMomYoungKids","PctWorkMom","NumIlleg","
+"PctIlleg","NumImmig","PctNotSpeakEnglWell","PctLargHouseOccup","
+"PersPerOccupHous","PersPerRentOccHous","PctPersOwnOccup","
+"PctPersDenseHous","HousVacant","PctHousOccup","PctHousOwnOcc","
+"PctVacantBoarded","PctVacMore6Mos","RentLowQ","RentHighQ","
+"MedRent","MedRentPctHousInc","MedOwnCostPctInc","MedOwnCostPctIncNoMtg","
+"NumInShelters","NumStreet","PctForeignBorn","PctUsePubTrans"
