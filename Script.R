@@ -167,7 +167,7 @@ summary(bic.all.model)
 library(boot, quietly = TRUE)
 
 #generate the GLM object on whole data for cv.glm to work
-aic.glm.model3<-glm(formula = AICFormula, data=myData)
+aic.glm.model3<-lm(formula = AICFormula, data=myData)
 cv.aic.glm3 <-cv.glm(data = myData,glmfit = aic.glm.model3, K = 10)
 #prediction error = 0.01782328
 #0.01782328/mean(myData$ViolentCrimesPerPop)
@@ -176,7 +176,7 @@ aic.all.model <- lm(formula = aic.all.formula, data = myData)
 cv.aic.all<-cv.glm(data = myData,glmfit = aic.all.model, K = 10)
 aic.all.prd<- predict(aic.all.model, newdata = testData)
 #worse off
-#sqrt(mean(aic.all.model$residuals^2))/mean(myData$ViolentCrimesPerPop)
+#sqrt(mean(aic.all.model$residuals^2))/mean(myData$ViolentCrimesPerPop) ~ 54% :X
 
 bic.all.model<-glm(formula = bic.formula, data = myData)
 bic.glm<-cv.glm(data = myData,glmfit = bic.all.model, K = 10)
@@ -190,8 +190,8 @@ bic.glm<-cv.glm(data = myData,glmfit = bic.all.model, K = 10)
 library(neuralnet, quietly = TRUE)
 nn1<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44), linear.output = TRUE) # removing the y col
 saveRDS(nn1, "./nn1.rds")
-
 nn1 <- readRDS("./nn1.rds")
+
 testData.nn<-testData[,c("population","racepctblack","agePct12t21",
 "agePct16t24","numbUrban","pctUrban","pctWWage","pctWFarmSelf",
 "pctWInvInc","pctWSocSec","whitePerCap","indianPerCap","AsianPerCap",
@@ -205,9 +205,57 @@ testData.nn<-testData[,c("population","racepctblack","agePct12t21",
 "MedRent","MedRentPctHousInc","MedOwnCostPctInc","MedOwnCostPctIncNoMtg",
 "NumInShelters","NumStreet","PctForeignBorn","PctUsePubTrans")]
 
-nn.pr<-compute(x = nn1, covariate = testData.nn)
-MSE.nn <-sum((testData[,101]-nn.pr$net.result)^2)/nrow(testData.nn) #
-MSE.nn*100
+nn1.pr<-compute(x = nn1, covariate = testData.nn)
+MSE.nn1 <-sum((testData[,101]-nn1.pr$net.result)^2)/nrow(testData.nn) #
+MSE.nn1*100 # ~  6.933821579%
+
+
+##2nd Model
+nn2<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29), linear.output = TRUE) # removing the y col
+saveRDS(nn2, "./nn2.rds")
+nn2 <- readRDS("./nn2.rds")
+
+
+nn2.pr<-compute(x = nn2, covariate = testData.nn)
+MSE.nn2 <-sum((testData[,101]-nn2.pr$net.result)^2)/nrow(testData.nn) #
+MSE.nn2*100 # ~5.637280655%
+
+# lets continue the 2/3 story
+
+nn3<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE) # removing the y col
+saveRDS(nn3, "./nn3.rds")
+nn3 <- readRDS("./nn3.rds")
+
+saveRDS(nnprop_with, "./nnprop_with.rds")
+
+nn3.pr<-compute(x = nn3, covariate = testData.nn)
+MSE.nn3<-sum((testData[,101]-nn3.pr$net.result)^2)/nrow(testData.nn) #
+MSE.nn3*100 #~ 5.378675508 % 
+
+
+#lets change the algorithm to resilient backpropagation with weight backtracking
+# advantages -
+# First, training with Rprop is often faster than training with back propagation. 
+# Second, Rprop is one of the fastest weight update mechanisms
+
+nn.rprop_with<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE, algorithm = "rprop+" ) # removing the y col
+saveRDS(nn.rprop_with, "./nn.rprop_with.rds")
+nn.rprop_with <- readRDS("./nn.rprop_with.rds")
+
+nn.rprop_with.pr<-compute(x = nn.rprop_with, covariate = testData.nn)
+MSE.rprop_with<-sum((testData[,101]-nn.rprop_with.pr$net.result)^2)/nrow(testData.nn) #
+MSE.rprop_with*100 # ~4.45 yay!
+
+# lets try sag algorithm
+
+nn.sag<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE, algorithm = "sag" ) # removing the y col
+saveRDS(nn.sag, "./nn.sag.rds")
+nn.sag <- readRDS("./nn.sag.rds")
+
+nn.sag.pr<-compute(x = nn.sag, covariate = testData.nn)
+MSE.sag<-sum((testData[,101]-nn.sag.pr$net.result)^2)/nrow(testData.nn) #
+MSE.sag*100 # 5.504 % meh!
+
 
 #lets compare
 #nnTst<-testData[,101]
