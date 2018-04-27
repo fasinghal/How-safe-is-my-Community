@@ -92,4 +92,15 @@ pr.result <- nn.pr$net.result
 pr.result <-ifelse(pr.result>0.5, yes = "poisonous",no = "edible") # convert to poisonous = 1, edible = 0
 actual.val <- ifelse(testData.MM$classp==1,yes = "poisonous",no = "edible")
 
-table(actual = actual.val, predicted = pr.result)
+result<-table(actual = actual.val, predicted = pr.result)
+ 
+#wrt edible mushroom
+precision <- result[1,1]/(result[1,1]+result[2,1])
+recall <- result[1,1] /(result[1,1]+result[1,2])
+F.Measure <- 2* (precision*recall) / (precision+recall)
+
+#results
+result
+precision
+recall
+F.Measure
