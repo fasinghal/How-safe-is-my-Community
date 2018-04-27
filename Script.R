@@ -246,6 +246,16 @@ nn.rprop_with.pr<-compute(x = nn.rprop_with, covariate = testData.nn)
 MSE.rprop_with<-sum((testData[,101]-nn.rprop_with.pr$net.result)^2)/nrow(testData.nn) #
 MSE.rprop_with*100 # ~4.45 yay!
 
+#without weight backprp
+
+nn.rprop_without<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE, algorithm = "rprop-" ) # removing the y col
+saveRDS(nn.rprop_without, "./nn.rprop_without.rds")
+nn.rprop_without<- readRDS("./nn.rprop_without.rds")
+
+nn.rprop_without.pr<-compute(x = nn.rprop_without, covariate = testData.nn)
+MSE.rprop_without<-sum((testData[,101]-nn.rprop_without.pr$net.result)^2)/nrow(testData.nn) #
+MSE.rprop_without*100 #~ 4.060703571 best so far
+
 # lets try sag algorithm
 
 nn.sag<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE, algorithm = "sag" ) # removing the y col
@@ -267,3 +277,40 @@ MSE.sag*100 # 5.504 % meh!
 #abline(0,1,lwd=2)
 #plot(testData[,101], aic.all.prd, col="blue",main='Real vs predicted LR',pch=18,cex=0.7,xlim=range, ylim = range)
 #abline(0,1,lwd=2)
+
+#works best for split at seed(1) for rprop-, hidden  c(66, 44, 29, 19)
+#lets automate()
+#running for backprop, seed 1 : 25, Hidden c(66, 44)
+pb <- progress_bar$new(total = 26)
+pb$tick()
+xval<-1:25
+yval<-rep(0,25)
+for(i in 1:25 ){
+  
+  set.seed(i)
+  index_train<-sample(1993, size = 1495) # ~75% split
+  trainData<- myData[index_train, ]
+  testData<- myData[-index_train,]
+  testData.nn<-testData[,c("population","racepctblack","agePct12t21",
+                           "agePct16t24","numbUrban","pctUrban","pctWWage","pctWFarmSelf",
+                           "pctWInvInc","pctWSocSec","whitePerCap","indianPerCap","AsianPerCap",
+                           "PctPopUnderPov","PctEmploy","PctEmplManu","PctOccupManu",
+                           "PctOccupMgmtProf","MalePctDivorce","MalePctNevMarr","TotalPctDiv",
+                           "PctKids2Par","PctWorkMomYoungKids","PctWorkMom","NumIlleg",
+                           "PctIlleg","NumImmig","PctNotSpeakEnglWell","PctLargHouseOccup",
+                           "PersPerOccupHous","PersPerRentOccHous","PctPersOwnOccup",
+                           "PctPersDenseHous","HousVacant","PctHousOccup","PctHousOwnOcc",
+                           "PctVacantBoarded","PctVacMore6Mos","RentLowQ","RentHighQ",
+                           "MedRent","MedRentPctHousInc","MedOwnCostPctInc","MedOwnCostPctIncNoMtg",
+                           "NumInShelters","NumStreet","PctForeignBorn","PctUsePubTrans")]
+  nn.rprop_without<-neuralnet(aic.all.formula, data = trainData,hidden = c(66, 44, 29, 19), linear.output = TRUE, algorithm = "rprop-") 
+  nn.rprop_without.pr<-compute(x = nn.rprop_without, covariate = testData.nn)
+  MSE.rprop_without<-sum((testData[,101]-nn.rprop_without.pr$net.result)^2)/nrow(testData.nn) #
+  MSE.rprop_without<-MSE.rprop_without*100
+  pb$tick()
+  xval[i]<-i
+  yval[i]<-MSE.rprop_without
+  
+}
+#yval<-readRDS(file = "./yval1to20.rds")
+plot(1:20,yval,type = "b", col="red")
