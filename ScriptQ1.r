@@ -1,3 +1,8 @@
+#Question 1
+#Submitted by 
+#Falak Singhal (fxs161530@utdallas.edu)
+#Shruti Govind bidada (sgb160130@utdallas.edu)
+
 #read the data and replace all the missing value indicators ("?") to NA
 communities <- read.csv("D:/SEM3 MS/R for DS P2/communities.data", header=FALSE, na.strings="?")
 

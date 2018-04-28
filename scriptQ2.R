@@ -1,3 +1,8 @@
+#Question 2
+#Submitted by 
+#Falak Singhal (fxs161530@utdallas.edu)
+#Shruti Govind bidada (sgb160130@utdallas.edu)
+
 myData <-read.csv("D:/SEM3 MS/R for DS P2/agaricus-lepiota.data", header=FALSE,na.strings="?")
 colnames(myData)<-c("class","shape","capsurface","capcolor","bruises","odor","gillattachment","gillspacing","gillsize","gillcolor","stalkshape","stalkroot","stalksurfaceabovering","stalksurfacebelowring","stalkcolorabovering","stalkcolorbelowring","veiltype","veilcolor","ringnumber","ringtype","sporeprintcolor","population","habitat")
 summary(myData)
